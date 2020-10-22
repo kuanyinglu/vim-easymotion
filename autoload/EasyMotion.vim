@@ -309,7 +309,8 @@ let s:config = {
 \   'direction': s:DIRECTION.forward,
 \   'inclusive': s:FALSE,
 \   'accept_cursor_pos': s:FALSE,
-\   'overwin': s:FALSE
+\   'overwin': s:FALSE,
+\   'within_line': s:FALSE
 \ }
 
 function! s:default_config() abort
@@ -324,6 +325,9 @@ function! EasyMotion#go(...) abort
     if c.overwin
         return EasyMotion#overwin#move(c.pattern)
     else
+        if c.within_line
+            let s:flag.within_line = 1
+        endif
         let s:current.is_operator = mode(1) ==# 'no' ? 1: 0
         call s:EasyMotion(c.pattern, c.direction, c.visualmode ? visualmode() : '', c.inclusive, c)
         return s:EasyMotion_is_cancelled
@@ -1245,6 +1249,8 @@ function! s:EasyMotion(regexp, direction, visualmode, is_inclusive, ...) " {{{
         while 1
             " Reached end of search range
             if pos == [0, 0]
+                keepjumps call cursor(s:current.cursor_position[0],
+                                    \ s:current.cursor_position[1])
                 break
             endif
 
@@ -1289,6 +1295,8 @@ function! s:EasyMotion(regexp, direction, visualmode, is_inclusive, ...) " {{{
                 let pos = searchpos(regexp, 'b', search_stopline)
                 " Reached end of search range
                 if pos == [0, 0]
+                    keepjumps call cursor(s:current.cursor_position[0],
+                                        \ s:current.cursor_position[1])
                     break
                 endif
 
